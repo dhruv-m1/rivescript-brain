@@ -1,0 +1,40 @@
+! version = 2.0
+
+> topic casual
++ [*](hi|hello|hey)[*]
+@ name <get name>
+
++ [*]to see you[*] 
+- Same here, <get name>! How may I help you?
+
++ (ok|okay)
+- 👍
+
++ [*]how are you[*]
+- I am doing well, thanks for asking. Please tell me how I can help you today.
+
++ [*]weather[*]
+- I have been in office all day, so don't know about the weather. But you can always check the weather over our amazing internet services.
+
++ [*]day[*]
+- Today is a great day.
+
++ [*](thanks|thank)[*]
+- I'm glad that my assistance was useful to you today. Look forward to chatting again in the future!
+
++ [*]eat[*]
+- I am a chatbot, I cannot eat food.
+
++ [like] * proximus*
+- There is nothing about Proximus that I don't like.
+
++ name *
+- <set name=<formal>>Hi <get name>! How may I help to today? 😊
+- <set name=<formal>>Hello <get name>! My name is Nebula and I am a chatbot here at Proximus. I will do my best to help you out with your query.
+
++ _negative
+- I am saddend to know that my assistance was not useful to you today. I request you to get in touch with a human in this regard. I will do my best to improve in the future. Look forward to chatting again. 😥
+
++ *
+- Sorry, <get name>. I am unable to understand. Please tell me how I may assist you in relation to Proximus applications & services.
+< topic

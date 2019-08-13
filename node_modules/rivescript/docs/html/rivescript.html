@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>rivescript</title>
+<link rel="stylesheet" type="text/css" href="md.css">
+</head>
+<body>
+
+<h1>Notice to Developers</h1>
+<p>The methods prefixed with the word "private" <em>should not be used</em> by you. They
+are documented here to help the RiveScript library developers understand the
+code; they are not considered 'stable' API functions and they may change or
+be removed at any time, for any reason, and with no advance notice.</p>
+<p>The most commonly used private function I've seen developers use is the
+<code>parse()</code> function, when they want to load RiveScript code from a string
+instead of a file. <strong>Do not use this function.</strong> The public API equivalent
+function is <code>stream()</code>. The parse function will probably be removed in the
+near future.</p>
+<h1>RiveScript (hash options)</h1>
+<p>Create a new RiveScript interpreter. <code>options</code> is an object with the
+following keys:</p>
+<div class="codehilite"><pre><span></span>* bool debug:     Debug mode               (default false)
+* int  depth:     Recursion depth limit    (default 50)
+* bool strict:    Strict mode              (default true)
+* bool utf8:      Enable UTF-8 mode        (default false, see below)
+* bool forceCase: Force-lowercase triggers (default false, see below)
+* func onDebug:   Set a custom handler to catch debug log messages (default null)
+* obj  errors:    Customize certain error messages (see below)
+* str  concat:    Globally replace the default concatenation mode when parsing
+                  RiveScript source files (default `null`. be careful when
+                  setting this option if using somebody else&#39;s RiveScript
+                  personality; see below)
+* sessionManager: provide a custom session manager to store user variables.
+                  The default is to store variables in memory, but you may
+                  use any async data store by providing an implementation of
+                  RiveScript&#39;s SessionManager. See the
+                  [sessions](./sessions.md) documentation.
+</pre></div>
+
+
+<h2>UTF-8 Mode</h2>
+<p>In UTF-8 mode, most characters in a user's message are left intact, except for
+certain metacharacters like backslashes and common punctuation characters like
+<code>/[.,!?;:]/</code>.</p>
+<p>If you want to override the punctuation regexp, you can provide a new one by
+assigning the <code>unicodePunctuation</code> attribute of the bot object after
+initialization. Example:</p>
+<div class="codehilite"><pre><span></span><span class="kd">var</span> <span class="nx">bot</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RiveScript</span><span class="p">({</span><span class="nx">utf8</span><span class="o">:</span> <span class="kc">true</span><span class="p">});</span>
+<span class="nx">bot</span><span class="p">.</span><span class="nx">unicodePunctuation</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">RegExp</span><span class="p">(</span><span class="sr">/[.,!?;:]/g</span><span class="p">);</span>
+</pre></div>
+
+
+<h2>Force Case</h2>
+<p>This option to the constructor will make RiveScript lowercase all the triggers
+it sees during parse time. This may ease the pain point that authors
+experience when they need to write a lowercase "i" in triggers, for example
+a trigger of <code>i am *</code>, where the lowercase <code>i</code> feels unnatural to type.</p>
+<p>By default a capital ASCII letter in a trigger would raise a parse error.
+Setting the <code>forceCase</code> option to <code>true</code> will instead silently lowercase the
+trigger and thus avoid the error.</p>
+<p>Do note, however, that this can have side effects with certain Unicode symbols
+in triggers, see <a href="https://www.w3.org/International/wiki/Case_folding">case folding in Unicode</a>.
+If you need to support Unicode symbols in triggers this may cause problems with
+certain symbols when made lowercase.</p>
+<h2>Global Concat Mode</h2>
+<p>The concat (short for concatenation) mode controls how RiveScript joins two
+lines of code together when a <code>^Continue</code> command is used in a source file.
+By default, RiveScript simply joins them together with no symbols inserted in
+between ("none"); the other options are "newline" which joins them with line
+breaks, or "space" which joins them with a single space character.</p>
+<p>RiveScript source files can define a <em>local, file-scoped</em> setting for this
+by using e.g. <code>! local concat = newline</code>, which affects how the continuations
+are joined in the lines that follow.</p>
+<p>Be careful when changing the global concat setting if you're using a RiveScript
+personality written by somebody else; if they were relying on the default
+concat behavior (didn't specify a <code>! local concat</code> option), then changing the
+global default will potentially cause formatting issues or trigger matching
+issues when using that personality.</p>
+<p>I strongly recommend that you <strong>do not</strong> use this option if you intend to ever
+share your RiveScript personality with others; instead, explicitly spell out
+the local concat mode in each source file. It might sound like it will save
+you a lot of typing by not having to copy and paste a <code>! local concat</code> option,
+but it will likely lead to misbehavior in your RiveScript personality when you
+give it to somebody else to use in their bot.</p>
+<h2>Custom Error Messages</h2>
+<p>You can provide any or all of the following properties in the <code>errors</code>
+argument to the constructor to override certain internal error messages:</p>
+<ul>
+<li><code>replyNotMatched</code>: The message returned when the user's message does not
+match any triggers in your RiveScript code.</li>
+</ul>
+<p>The default is "ERR: No Reply Matched"</p>
+<p><strong>Note:</strong> the recommended way to handle this case is to provide a trigger of
+simply <code>*</code>, which serves as the catch-all trigger and is the default one
+that will match if nothing else matches the user's message. Example:</p>
+<div class="codehilite"><pre><span></span>+ *
+- I don&#39;t know what to say to that!
+</pre></div>
+
+
+<ul>
+<li><code>replyNotFound</code>: This message is returned when the user <em>did</em> in fact match
+a trigger, but no response was found for the user. For example, if a trigger
+only checks a set of conditions that are all false and provides no "normal"
+reply, this error message is given to the user instead.</li>
+</ul>
+<p>The default is "ERR: No Reply Found"</p>
+<p><strong>Note:</strong> the recommended way to handle this case is to provide at least one
+normal reply (with the <code>-</code> command) to every trigger to cover the cases
+where none of the conditions are true. Example:</p>
+<div class="codehilite"><pre><span></span>+ hello
+* &lt;get name&gt; != undefined =&gt; Hello there, &lt;get name&gt;.
+- Hi there.
+</pre></div>
+
+
+<ul>
+<li><code>objectNotFound</code>: This message is inserted into the bot's reply in-line when
+it attempts to call an object macro which does not exist (for example, its
+name was invalid or it was written in a programming language that the bot
+couldn't parse, or that it had compile errors).</li>
+</ul>
+<p>The default is "[ERR: Object Not Found]"
+* <code>deepRecursion</code>: This message is inserted when the bot encounters a deep
+recursion situation, for example when a reply redirects to a trigger which
+redirects back to the first trigger, creating an infinite loop.</p>
+<p>The default is "ERR: Deep Recursion Detected"</p>
+<p>These custom error messages can be provided during the construction of the
+RiveScript object, or set afterwards on the object's <code>errors</code> property.</p>
+<p>Examples:</p>
+<div class="codehilite"><pre><span></span><span class="kd">var</span> <span class="nx">bot</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RiveScript</span><span class="p">({</span>
+<span class="nx">errors</span><span class="o">:</span> <span class="p">{</span>
+<span class="nx">replyNotFound</span><span class="o">:</span> <span class="s2">&quot;I don&#39;t know how to reply to that.&quot;</span>
+<span class="p">}</span>
+<span class="p">});</span>
+
+<span class="nx">bot</span><span class="p">.</span><span class="nx">errors</span><span class="p">.</span><span class="nx">objectNotFound</span> <span class="o">=</span> <span class="s2">&quot;Something went terribly wrong.&quot;</span><span class="p">;</span>
+</pre></div>
+
+
+<h2>string version ()</h2>
+<p>Returns the version number of the RiveScript.js library.</p>
+<h2>private void runtime ()</h2>
+<p>Detect the runtime environment of this module, to determine if we're
+running in a web browser or from node.</p>
+<h2>private void say (string message)</h2>
+<p>This is the debug function. If debug mode is enabled, the 'message' will be
+sent to the console via console.log (if available), or to your <code>onDebug</code>
+handler if you defined one.</p>
+<h2>private void warn (string message[, filename, lineno])</h2>
+<p>Print a warning or error message. This is like debug, except it's GOING to
+be given to the user one way or another. If the <code>onDebug</code> handler is
+defined, this is sent there. If <code>console</code> is available, this will be sent
+there. In a worst case scenario, an alert box is shown.</p>
+<h2>async loadFile(string path || array path)</h2>
+<p>Load a RiveScript document from a file. The path can either be a string that
+contains the path to a single file, or an array of paths to load multiple
+files. The Promise resolves when all of the files have been parsed and
+loaded. The Promise rejects on error.</p>
+<p>This loading method is asynchronous so you must resolve the promise or
+await it before you go on to sort the replies.</p>
+<p>For backwards compatibility, this function can take callbacks instead
+of returning a Promise:</p>
+<blockquote>
+<p><code>rs.loadDirectory(path, onSuccess(), onError(err, filename, lineno))</code></p>
+</blockquote>
+<ul>
+<li>resolves: <code>()</code></li>
+<li>rejects: <code>(string error)</code></li>
+</ul>
+<h2>async loadDirectory (string path)</h2>
+<p>Load RiveScript documents from a directory recursively.</p>
+<p>For backwards compatibility, this function can take callbacks instead
+of returning a Promise:</p>
+<blockquote>
+<p><code>rs.loadDirectory(path, onSuccess(), onError(err, filename, lineno))</code></p>
+</blockquote>
+<p>This function is not supported in a web environment.</p>
+<h2>bool stream (string code[, func onError])</h2>
+<p>Load RiveScript source code from a string. <code>code</code> should be the raw
+RiveScript source code, with line breaks separating each line.</p>
+<p>This function is synchronous, meaning it does not return a Promise. It
+parses the code immediately and returns. Do not fear: the parser runs
+very quickly.</p>
+<p>Returns <code>true</code> if the code parsed with no error.</p>
+<p>onError function receives: <code>(err string[, filename str, line_no int])</code></p>
+<h2>private bool parse (string name, string code[, func onError(string)])</h2>
+<p>Parse RiveScript code and load it into memory. <code>name</code> is a file name in case
+syntax errors need to be pointed out. <code>code</code> is the source code.</p>
+<p>Returns <code>true</code> if the code parsed with no error.</p>
+<h2>void sortReplies()</h2>
+<p>After you have finished loading your RiveScript code, call this method to
+populate the various sort buffers. This is absolutely necessary for reply
+matching to work efficiently!</p>
+<h2>data deparse()</h2>
+<p>Translate the in-memory representation of the loaded RiveScript documents
+into a JSON-serializable data structure. This may be useful for developing
+a user interface to edit RiveScript replies without having to edit the
+RiveScript code manually, in conjunction with the <code>write()</code> method.</p>
+<p>The format of the deparsed data structure is out of scope for this document,
+but there is additional information and examples available in the <code>eg/</code>
+directory of the source distribution. You can read the documentation on
+GitHub here: <a href="https://github.com/aichaos/rivescript-js/tree/master/eg/deparse">RiveScript Deparse</a></p>
+<h2>string stringify([data deparsed])</h2>
+<p>Translate the in-memory representation of the RiveScript brain back into
+RiveScript source code. This is like <code>write()</code>, but it returns the text of
+the source code as a string instead of writing it to a file.</p>
+<p>You can optionally pass the parameter <code>deparsed</code>, which should be a data
+structure of the same format that the <code>deparse()</code> method returns. If not
+provided, the current internal data is used (this function calls <code>deparse()</code>
+itself and uses that).</p>
+<p>Warning: the output of this function won't be pretty. For example, no word
+wrapping will be done for your longer replies. The only guarantee is that
+what comes out of this function is valid RiveScript code that can be loaded
+back in later.</p>
+<h2>void write (string filename[, data deparsed])</h2>
+<p>Write the in-memory RiveScript data into a RiveScript text file. This
+method can not be used on the web; it requires filesystem access and can
+only run from a Node environment.</p>
+<p>This calls the <code>stringify()</code> method and writes the output into the filename
+specified. You can provide your own deparse-compatible data structure,
+or else the current state of the bot's brain is used instead.</p>
+<h2>void setHandler(string lang, object)</h2>
+<p>Set a custom language handler for RiveScript object macros. See the source
+for the built-in JavaScript handler (src/lang/javascript.coffee) as an
+example.</p>
+<p>By default, JavaScript object macros are enabled. If you want to disable
+these (e.g. for security purposes when loading untrusted third-party code),
+just set the JavaScript handler to null:</p>
+<div class="codehilite"><pre><span></span><span class="kd">var</span> <span class="nx">bot</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RiveScript</span><span class="p">();</span>
+<span class="nx">bot</span><span class="p">.</span><span class="nx">setHandler</span><span class="p">(</span><span class="s2">&quot;javascript&quot;</span><span class="p">,</span> <span class="kc">null</span><span class="p">);</span>
+</pre></div>
+
+
+<h2>void setSubroutine(string name, function)</h2>
+<p>Define a JavaScript object macro from your program.</p>
+<p>This is equivalent to having a JS object defined in the RiveScript code,
+except your JavaScript code is defining it instead.</p>
+<h2>void setGlobal (string name, string value)</h2>
+<p>Set a global variable. This is equivalent to <code>! global</code> in RiveScript.
+Set the value to <code>undefined</code> to delete a global.</p>
+<h2>void setVariable (string name, string value)</h2>
+<p>Set a bot variable. This is equivalent to <code>! var</code> in RiveScript.
+Set the value to <code>undefined</code> to delete a bot variable.</p>
+<h2>void setSubstitution (string name, string value)</h2>
+<p>Set a substitution. This is equivalent to <code>! sub</code> in RiveScript.
+Set the value to <code>undefined</code> to delete a substitution.</p>
+<h2>void setPerson (string name, string value)</h2>
+<p>Set a person substitution. This is equivalent to <code>! person</code> in RiveScript.
+Set the value to <code>undefined</code> to delete a person substitution.</p>
+<h2>async setUservar (string user, string name, string value)</h2>
+<p>Set a user variable for a user.</p>
+<h2>async setUservars (string user, object data)</h2>
+<p>Set multiple user variables by providing an object of key/value pairs.
+Equivalent to calling <code>setUservar()</code> for each pair in the object.</p>
+<h2>string getVariable (string name)</h2>
+<p>Gets a variable. This is equivalent to <code>&lt;bot name&gt;</code> in RiveScript.</p>
+<h2>async getUservar (string user, string name) -&gt; value</h2>
+<p>Get a variable from a user. Returns the string "undefined" if it isn't
+defined.</p>
+<h2>async getUservars ([string user]) -&gt; object</h2>
+<p>Get all variables about a user. If no user is provided, returns all data
+about all users.</p>
+<h2>async clearUservars ([string user])</h2>
+<p>Clear all a user's variables. If no user is provided, clears all variables
+for all users.</p>
+<h2>async freezeUservars (string user)</h2>
+<p>Freeze the variable state of a user. This will clone and preserve the user's
+entire variable state, so that it can be restored later with
+<code>thawUservars()</code></p>
+<h2>async thawUservars (string user[, string action])</h2>
+<p>Thaw a user's frozen variables. The action can be one of the following:
+<em> discard: Don't restore the variables, just delete the frozen copy.
+</em> keep: Keep the frozen copy after restoring
+* thaw: Restore the variables and delete the frozen copy (default)</p>
+<h2>async lastMatch (string user) -&gt; string</h2>
+<p>Retrieve the trigger that the user matched most recently.</p>
+<h2>async initialMatch (string user) -&gt; string</h2>
+<p>Retrieve the trigger that the user matched initially. This will return
+only the first matched trigger and will not include subsequent redirects.</p>
+<p>This value is reset on each <code>reply()</code> call.</p>
+<h2>async lastTriggers (string user) -&gt; object</h2>
+<p>Retrieve the triggers that have been matched for the last reply. This
+will contain all matched trigger with every subsequent redirects.</p>
+<p>This value is reset on each <code>reply()</code> or <code>replyAsync()</code> call.</p>
+<h2>async getUserTopicTriggers (string username) -&gt; object</h2>
+<p>Retrieve the triggers in the current topic for the specified user. It can
+be used to create a UI that gives the user options based on trigges, e.g.
+using buttons, select boxes and other UI resources. This also includes the
+triggers available in any topics inherited or included by the user's current
+topic.</p>
+<p>This will return <code>undefined</code> if the user cant be find</p>
+<h2>string currentUser ()</h2>
+<p>Retrieve the current user's ID. This is most useful within a JavaScript
+object macro to get the ID of the user who invoked the macro (e.g. to
+get/set user variables for them).</p>
+<p>This will return undefined if called from outside of a reply context
+(the value is unset at the end of the <code>reply()</code> method)</p>
+<h2>Promise reply (string username, string message[, scope])</h2>
+<p>Fetch a reply from the RiveScript brain. The message doesn't require any
+special pre-processing to be done to it, i.e. it's allowed to contain
+punctuation and weird symbols. The username is arbitrary and is used to
+uniquely identify the user, in the case that you may have multiple
+distinct users chatting with your bot.</p>
+<p><strong>Changed in version 2.0.0:</strong> this function used to return a string, but
+therefore didn't support async object macros or session managers. This
+function now returns a Promise (obsoleting the <code>replyAsync()</code> function).</p>
+<p>The optional <code>scope</code> parameter will be passed down into any JavaScript
+object macros that the RiveScript code executes. If you pass the special
+variable <code>this</code> as the scope parameter, then <code>this</code> in the context of an
+object macro will refer to the very same <code>this</code> as the one you passed in,
+so for example the object macro will have access to any local functions
+or attributes that your code has access to, from the location that <code>reply()</code>
+was called. For an example of this, refer to the <code>eg/scope</code> directory in
+the source distribution of RiveScript-JS.</p>
+<p>Example:</p>
+<div class="codehilite"><pre><span></span><span class="c1">// Normal usage as a promise</span>
+<span class="nx">bot</span><span class="p">.</span><span class="nx">reply</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">message</span><span class="p">,</span> <span class="k">this</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">reply</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bot&gt;&quot;</span><span class="p">,</span> <span class="nx">reply</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="c1">// Async-Await usage in an async function.</span>
+<span class="nx">async</span> <span class="kd">function</span> <span class="nx">getReply</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">message</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">reply</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">bot</span><span class="p">.</span><span class="nx">reply</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">message</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bot&gt;&quot;</span><span class="p">,</span> <span class="nx">reply</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2>Promise replyAsync (string username, string message [[, scope], callback])</h2>
+<p><strong>Obsolete as of v2.0.0</strong> -- use <code>reply()</code> instead in new code.</p>
+<p>Asyncronous version of reply. Use replyAsync if at least one of the subroutines
+used with the <code>&lt;call&gt;</code> tag returns a promise.</p>
+<p>Example: using promises</p>
+<div class="codehilite"><pre><span></span><span class="nx">rs</span><span class="p">.</span><span class="nx">replyAsync</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="nx">message</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">reply</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bot&gt;&quot;</span><span class="p">,</span> <span class="nx">reply</span><span class="p">);</span>
+<span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">&quot;Error: &quot;</span><span class="p">,</span> <span class="nx">error</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+
+<p>Example: using the callback</p>
+<div class="codehilite"><pre><span></span><span class="nx">rs</span><span class="p">.</span><span class="nx">replyAsync</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">msg</span><span class="p">,</span> <span class="k">this</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">,</span> <span class="nx">reply</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bot&gt;&quot;</span><span class="p">,</span> <span class="nx">reply</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">&quot;Error: &quot;</span><span class="p">,</span> <span class="nx">error</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+
+
+<h2>Promise Promise</h2>
+<p><strong>DEPRECATED</strong></p>
+<p>Backwards compatible alias to the native JavaScript <code>Promise</code> object.</p>
+<p><code>rs.Promise</code> used to refer to an <code>RSVP.Promise</code> which acted as a polyfill
+for older systems. In new code, return a native Promise directly from your
+object macros.</p>
+<p>This enables you to create a JavaScript object macro that returns a promise
+for asynchronous tasks (e.g. polling a web API or database). Example:</p>
+<div class="codehilite"><pre><span></span><span class="nx">rs</span><span class="p">.</span><span class="nx">setSubroutine</span><span class="p">(</span><span class="s2">&quot;asyncHelper&quot;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">rs</span><span class="p">,</span> <span class="nx">args</span><span class="p">)</span> <span class="p">{</span>
+ <span class="k">return</span> <span class="k">new</span> <span class="nx">rs</span><span class="p">.</span><span class="nb">Promise</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="p">{</span>
+   <span class="nx">resolve</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+ <span class="p">});</span>
+<span class="p">});</span>
+</pre></div>
+
+
+<p>If you're using promises in your object macros, you need to get a reply from
+the bot using the <code>replyAsync()</code> method instead of <code>reply()</code>, for example:</p>
+<div class="codehilite"><pre><span></span><span class="nx">rs</span><span class="p">.</span><span class="nx">replyAsync</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">message</span><span class="p">,</span> <span class="k">this</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">reply</span><span class="p">)</span> <span class="p">{</span>
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Bot&gt; &quot;</span><span class="p">,</span> <span class="nx">reply</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+</body>
+</html>
