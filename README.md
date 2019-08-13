@@ -30,18 +30,24 @@ bot.loadDirectory("./eng/").then(async() => {
 });
 ```
 ### The Classifier
-Documentation comming soon...
+Documenation Coming Soon.
 
 #### Expected Structure of Rive Files
+Documenation Coming Soon.
 #### Saving Image
+Documenation Coming Soon.
 #### Restoring Image
+Documenation Coming Soon.
 #### Training
+Documenation Coming Soon.
 #### Retraining
+Documenation Coming Soon.
 #### Classifying
+Documenation Coming Soon.
 
 ### Managing Discussions
-Documenation Comming Soon.
+Documenation Coming Soon.
 
 ### Middleware
-Documenation Comming Soon.
+Documenation Coming Soon.
 
