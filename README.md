@@ -23,15 +23,16 @@ bot.loadDirectory("./eng/").then(async() => {
     bot.classifier.add('Hello, how are you?', 'casual');
     bot.classifier.train();
     // Getting Reply
-    console.log(await bot.reply('dhruv','Hello'));
+    console.log(await bot.reply('username','Hello'));
 
 }).catch((e) => {
-    console.trace("[ENG] Could not load Rive files.", e);
+    console.trace("Could not load Rive files.", e);
 });
 ```
 ### The Classifier
-Documentation comming soon
+Documentation comming soon...
 
+#### Expected Structure of Rive Files
 #### Saving Image
 #### Restoring Image
 #### Training
