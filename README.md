@@ -113,3 +113,4 @@ Calling middleware from a RiveScript file is very simple. Simply set the `event`
 - Here you go: <set event=myFunction>
 ```
 
+**All feedback is appreciacted. Please provide your feedback by clicking <a href="https://github.com/dhruv-tech/rivescript-brain/issues">here</a>.**
