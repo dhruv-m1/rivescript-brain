@@ -54,7 +54,7 @@ To train a classifier, data must be added first.
 ```javascript
 bot.classifier.add('Hello, how do you do?', 'casual');
 ```
-<br/>
+
 Classifier training can be initiated as follows:
 ```javascript
 bot.classifier.train();
