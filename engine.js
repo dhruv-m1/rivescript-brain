@@ -7,9 +7,9 @@ const emitter = new EventEmitter();
 
 class engine extends RiveScript {
 
-    constructor(options) {
+    constructor(options = {utf8:false}) {
         super(options);
-        this.classifier = classifier;
+        this.classifier = new classifier();
     }
 
     async reply(user, text){

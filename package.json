@@ -1,7 +1,7 @@
 {
   "name": "rivescript-brain",
-  "version": "0.5.0",
-  "description": "Rivescript-Brian adds NN-based classification and middleware support to rivescript.",
+  "version": "0.5.2",
+  "description": "rivescript-brain adds NN-based classification and middleware support to rivescript.",
   "main": "engine.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -20,5 +20,13 @@
     "brain.js": "^1.6.1",
     "rivescript": "^2.0.0"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dhruv-tech/rivescript-brain.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dhruv-tech/rivescript-brain/issues"
+  },
+  "homepage": "https://github.com/dhruv-tech/rivescript-brain#readme"
 }
