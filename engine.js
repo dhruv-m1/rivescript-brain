@@ -13,7 +13,7 @@ class engine extends RiveScript {
     async reply(user, text){
 
         if(!await this.inDiscussion(user)){
-            let classification = classifier.classify(text);
+            let classification = this.classifier.classify(text);
             await super.setUservar(user, 'topic', classification);
             
         }
@@ -35,9 +35,9 @@ class engine extends RiveScript {
 
     async processMiddleware(user, input, output){
         let event = await super.getUservar(user, 'event');
-        await super.setUservar(user, 'event', null);
+        await super.setUservar(user, 'event', 'undefined');
 
-        if(event){
+        if(event != 'undefined'){
             output = await this.middleware[event](input, output);
         }
         

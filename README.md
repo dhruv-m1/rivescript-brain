@@ -42,12 +42,12 @@ For the classifier to work as intended, it is expected that all conversations in
 To save a JSON image of a trained classifier:
 ```javascript
 // Assuming 'bot' is already trained
-bot.classifier.save('./myFilePath/image.json');
+await bot.classifier.save('./myFilePath/image.json');
 ```
 #### Restoring Image
 To restore trained classifier from a saved JSON image:
 ```javascript
-bot.classifier.restore('./myFilePath/image.json');
+await bot.classifier.restore('./myFilePath/image.json');
 ```
 #### Training
 To train a classifier, data must be added first.
