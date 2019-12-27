@@ -1,6 +1,6 @@
 {
   "name": "rivescript-brain",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "NN-Based intent detection and middleware support for RiveScript.",
   "main": "engine.js",
   "scripts": {
