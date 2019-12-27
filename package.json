@@ -1,6 +1,6 @@
 {
   "name": "rivescript-brain",
-  "version": "0.6.0",
+  "version": "0.9.0",
   "description": "rivescript-brain adds NN-based classification and middleware support to rivescript.",
   "main": "engine.js",
   "scripts": {
@@ -17,6 +17,7 @@
   "author": "Dhruv",
   "license": "MIT",
   "dependencies": {
+    "brain.js": "^2.0.0-alpha.11",
     "pos": "^0.4.2",
     "rivescript": "^2.0.0"
   },

@@ -3,7 +3,7 @@ const fs = require('fs');
 const pos = require('pos');
 
 const net = new brain.NeuralNetwork({ hiddenLayers: [3] });
-let cachedClassifier = net.toFunction();
+let cachedClassifier = null;
 
 class classifier {
 
@@ -24,20 +24,26 @@ class classifier {
 
     classify(txt) {
         txt = processText(txt);
-        let category = cachedClassifier({[[txt]]: 1});
+        if(cachedClassifier != null) {
+            let category = cachedClassifier({[[txt]]: 1});
 
-        let highest = {}
-        highest.val = category[Object.keys(category)[0]];
-        highest.name = Object.keys(category)[0];
-
-        for (let key in category) {
-            if(category[key] > highest.val) {
-                highest.val = category[key];
-                highest.name = key;
+            let highest = {}
+            highest.val = category[Object.keys(category)[0]];
+            highest.name = Object.keys(category)[0];
+    
+            for (let key in category) {
+                if(category[key] > highest.val) {
+                    highest.val = category[key];
+                    highest.name = key;
+                }
             }
+            
+            return highest.name;  
+        } else {
+            console.error("Classifier not trained to preform this operation.");
+            return "#idk@classifier";
         }
-        
-        return highest.name;
+
     }
 
     save(path) {
