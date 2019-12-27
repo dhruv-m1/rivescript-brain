@@ -1,18 +1,19 @@
 {
   "name": "rivescript-brain",
-  "version": "0.9.5",
-  "description": "rivescript-brain adds NN-based classification and middleware support to rivescript.",
+  "version": "1.0.0",
+  "description": "NN-Based intent detection and middleware support for RiveScript.",
   "main": "engine.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "rivescript",
-    "brian.js",
-    "AI",
+    "brain.js",
+    "AIML",
     "chatbot",
     "machine",
-    "learning"
+    "learning",
+    "intent"
   ],
   "author": "Dhruv",
   "license": "MIT",
