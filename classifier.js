@@ -17,7 +17,7 @@ class classifier {
     }
 
     train(options = { iterations: 1000, erroThresh: 0.000 }) {
-        new brain.NeuralNetwork({ hiddenLayers: [3] });
+        net = new brain.NeuralNetwork({ hiddenLayers: [3] });
         net.train(this.trainingData, options);
         cachedClassifier = net.toFunction();
     }
