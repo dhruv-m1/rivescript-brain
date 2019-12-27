@@ -17,7 +17,6 @@
   "author": "Dhruv",
   "license": "MIT",
   "dependencies": {
-    "brain.js": "^1.6.1",
     "pos": "^0.4.2",
     "rivescript": "^2.0.0"
   },

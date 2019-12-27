@@ -3,6 +3,8 @@ const fs = require('fs');
 const pos = require('pos');
 
 const net = new brain.NeuralNetwork({ hiddenLayers: [3] });
+let cachedClassifier = net.toFunction();
+
 class classifier {
 
     constructor() {
@@ -17,11 +19,12 @@ class classifier {
 
     train(options = { iterations: 1000, erroThresh: 0.000 }) {
         net.train(this.trainingData, options);
+        cachedClassifier = net.toFunction();
     }
 
     classify(txt) {
         txt = processText(txt);
-        let category = net.run({[[txt]]: 1});
+        let category = cachedClassifier({[[txt]]: 1});
 
         let highest = {}
         highest.val = category[Object.keys(category)[0]];
