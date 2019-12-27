@@ -1,16 +1,31 @@
 # rivescript-brain
 
+<a href="https://imgur.com/KR3z73r"><img src="https://i.imgur.com/KR3z73r.png" title="What's new" height="175px"/></a>
+
+## Overview
+`rivescript-brain` combines the power of [AIML](http://www.aiml.foundation/index.html)-based [RiveScript](https://www.rivescript.com/) with [Brain.js](https://brain.js.org/) to add neural-network based [intent](https://chatbotsmagazine.com/chatbot-vocabulary-10-chatbot-terms-you-need-to-know-3911b1ef31b4) detection ability - prevalent in modern chatbot design - to the former.
+
+The following documentation assumes basic knowledge of [RiveScript](https://www.rivescript.com/) and the concept of [classification](https://towardsdatascience.com/machine-learning-classifiers-a5cc4e1b0623).
+
+**ℹ Facing issues or have feedback? Click <a href="https://github.com/dhruv-tech/rivescript-brain/issues">here</a>.**
+
 ## Installation
 
 ```javascript
 npm i rivescript-brain
 ```
+<b>📢 Facing difficulties while installing the package?</b> This is likely due to the `brain.js` dependency.
+
+If you are on Windows, this can be resolved by installing `windows-build-tools` from npm with *administrative* privligies:<br/>
+`npm install --global --production windows-build-tools`
+
+If you are using another operating system or don't have *admin* privligies on Windows, please refer to [this guide](https://brain.js.org/#/getting-started).
 
 ## Usage
 
-`rivescript-brain` offers all the same functionality as rivescript with added classifiaction and middleware functionality.
+`rivescript-brain` offers all the same functionality as rivescript with added intent detection and middleware functionality.
 
-Language(s) Supported: English.
+📚 Language(s) Supported: English.
 
 ### Getting Started
 
@@ -22,7 +37,7 @@ const bot = new rs({utf8:true});
 bot.loadDirectory("./dir/").then(async() => {
     bot.sortReplies();
     // Classifier Setup
-    bot.classifier.add('Hello, how are you?', 'casual');
+    bot.classifier.add('Hello, how are you?', 'casual'); // i.e. ([sample utterance], [intent])
     bot.classifier.train();
     // Getting Reply
     console.log(await bot.reply('username','Hello'));
@@ -33,10 +48,10 @@ bot.loadDirectory("./dir/").then(async() => {
 ```
 ### The Classifier
 
-In rivescript-brain, a Feed-forward Neural Network is used to classify phrases.
+In `rivescript-brain`, a feed-forward neural network is used to classify phrases.
 
 #### Expected Structure of Rive Files
-For the classifier to work as intended, it is expected that all conversations in the RiveScript files, are sorted by topic. These topics must be the same as the classifications used to train the classifier. To learn more about topics in RiveScript, please click <a href="https://www.rivescript.com/docs/tutorial#labeled-sections">here</a>.<br/>
+For the classifier to work as intended, it is expected that all conversations in the RiveScript files, are sorted by topic. These topics must be the same as the intents used to train the classifier. To learn more about topics in RiveScript, please click <a href="https://www.rivescript.com/docs/tutorial#labeled-sections">here</a>.<br/>
 
 #### Saving Image
 To save a JSON image of a trained classifier:
@@ -49,8 +64,8 @@ To restore trained classifier from a saved JSON image:
 ```javascript
 await bot.classifier.restore('./myFilePath/image.json');
 ```
-#### Training
-To train a classifier, data must be added first.
+#### Training & Retraining
+To train a classifier, data must be added first. Note that when retraining, previously added data is retained and does not need to be added again.
 ```javascript
 bot.classifier.add('Hello, how do you do?', 'casual');
 ```
@@ -59,8 +74,6 @@ Classifier training can be initiated as follows:
 ```javascript
 bot.classifier.train();
 ```
-#### Retraining
-This feature will be added once <a href="https://github.com/BrainJS/brain.js/issues/427">issue #427</a> is resolved with the brain.js package. Until then, the training function would need to be used with the entire dataset (Note: This will result in downtime in case of a web application).
 
 #### Classifying
 ```javascript
@@ -88,7 +101,7 @@ await bot.reply('username','Hello');
 ```
 
 ### Middleware
-Middleware allows for triggering a script based on the response recevied from the rivescript dialog engine.
+Middleware allows for triggering a script based on the response recevied from the rivescript dialog engine. This is suitable for applications such as [entity detection](https://chatbotsmagazine.com/chatbot-vocabulary-10-chatbot-terms-you-need-to-know-3911b1ef31b4).
 
 #### Writing Middleware
 Adding a middleware function is simple:
@@ -112,5 +125,3 @@ Calling middleware from a RiveScript file is very simple. Simply set the `event`
 + tell me fact
 - Here you go: <set event=myFunction>
 ```
-
-**All feedback is appreciated. Please provide your feedback by clicking <a href="https://github.com/dhruv-tech/rivescript-brain/issues">here</a>.**
