@@ -2,7 +2,7 @@ const brain = require('brain.js');
 const fs = require('fs');
 const pos = require('pos');
 
-const net = new brain.NeuralNetwork({ hiddenLayers: [3] });
+let net;
 let cachedClassifier = null;
 
 class classifier {
@@ -11,13 +11,13 @@ class classifier {
         this.trainingData = [];
     }
 
-
     add(txt, label) {
         txt = processText(txt);
         this.trainingData.push({ input: {[[txt]]: 1}, output: {[[label]]: 1}});
     }
 
     train(options = { iterations: 1000, erroThresh: 0.000 }) {
+        new brain.NeuralNetwork({ hiddenLayers: [3] });
         net.train(this.trainingData, options);
         cachedClassifier = net.toFunction();
     }
