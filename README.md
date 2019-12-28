@@ -122,6 +122,6 @@ The output returned by the middleware is what the `reply(input)` function will r
 #### Calling Middleware
 Calling middleware from a RiveScript file is very simple. Simply set the `event` variable to the name of the middleware function that you'd like to call:
 ```
-+ tell me fact
++ tell me a fact
 - Here you go: <set event=myFunction>
 ```
