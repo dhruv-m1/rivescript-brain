@@ -1,7 +1,5 @@
 # rivescript-brain
 
-<a href="https://imgur.com/KR3z73r"><img src="https://i.imgur.com/KR3z73r.png" title="What's new" height="175px"/></a>
-
 ## Overview
 `rivescript-brain` combines the power of [AIML](http://www.aiml.foundation/index.html)-based [RiveScript](https://www.rivescript.com/) with [Brain.js](https://brain.js.org/) to add neural-network based [intent](https://chatbotsmagazine.com/chatbot-vocabulary-10-chatbot-terms-you-need-to-know-3911b1ef31b4) detection ability - prevalent in modern chatbot design - to the former.
 
