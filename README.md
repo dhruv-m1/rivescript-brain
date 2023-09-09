@@ -5,8 +5,6 @@
 
 The following documentation assumes basic knowledge of [RiveScript](https://www.rivescript.com/) and the concept of [classification](https://towardsdatascience.com/machine-learning-classifiers-a5cc4e1b0623).
 
-**ℹ Facing issues or have feedback? Click <a href="https://github.com/dhruv-tech/rivescript-brain/issues">here</a>.**
-
 ## Installation
 
 ```javascript
